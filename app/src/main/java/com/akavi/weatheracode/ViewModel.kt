@@ -26,6 +26,7 @@ class WeatherViewModel(application:Application): AndroidViewModel(application) {
                 _latitude.value = location?.latitude!!
                 _longitude.value = location.longitude
             }
+
     }
 
 }

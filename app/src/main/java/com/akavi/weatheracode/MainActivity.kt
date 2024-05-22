@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.akavi.weatheracode.ui.theme.WeatherAcodeTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.Normalizer
 import kotlin.math.roundToInt
 
 
@@ -50,6 +51,11 @@ class MainActivity : ComponentActivity() {
                 var latitude = weatherViewModel.latitude.collectAsState()
                 var longitude = weatherViewModel.longitude.collectAsState()
 
+                var latitudeTwoDecimal = latitude.value.times(100.00).roundToInt().div(100.0)
+                    .toString()
+                var longitudeTwoDecimal = longitude.value.times(100.00).roundToInt().div(100.0)
+                    .toString()
+                
                 //Latitude Co-ordinates to DMS format
                 var latitudeDegree = latitude.value.toInt()
                 var latitudeMinute = latitude.value.minus(latitudeDegree).times(60)
@@ -67,7 +73,7 @@ class MainActivity : ComponentActivity() {
                     //using retrofit
                     val weatherServices = WeatherClient.getWeatherServices()
 
-                    val response = weatherServices.getWeather(city, apiKey)
+                    val response = weatherServices.getWeather( lat = latitudeTwoDecimal, lon = longitudeTwoDecimal , apiKey = apiKey)
                     temp = response.main.temp.minus(273.00).times(100.00).roundToInt().div(100.0)
                         .toString()
                     name = response.name
@@ -78,7 +84,7 @@ class MainActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = temp)
-                    Text(text = name)
+                    Text(text = name.unaccent())
                     Spacer(modifier = Modifier.size(100.dp))
                     Text(text = "Latitude: ${latitude.value}")
                     Text(text = "Longitude: ${longitude.value}")
@@ -92,7 +98,18 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+
+
+
+    fun CharSequence.unaccent(): String {
+        val REGEX_UNACCENT = "\\p{InCombiningDiacriticalMarks}+".toRegex()
+        val temp = Normalizer.normalize(this, Normalizer.Form.NFD)
+        return REGEX_UNACCENT.replace(temp, "")
+    }
+
 }
+
 
 
 
